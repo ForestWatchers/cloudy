@@ -152,7 +152,8 @@ def update_tasks(api_url, api_key, app='filtering'):
     else:
         return False
 
-def create_app(api_url , api_key, name=None, short_name=None, description=None, template="template.html"):
+def create_app(api_url , api_key, name=None, short_name=None, description=None,\
+        template="template.html", tut="tutorial.html"):
     """
     Creates the application. 
 
@@ -172,8 +173,11 @@ def create_app(api_url , api_key, name=None, short_name=None, description=None, 
     file = open(template)
     text = file.read()
     file.close()
+    file = open(tut)
+    text_tutorial = file.read()
+    file.close()
     info = dict (thumbnail="http://img36.imageshack.us/img36/285/cloudyr.jpg",
-                 task_presenter = text)
+                 task_presenter = text, tutorial = text_tutorial)
     data = dict(name = name, short_name = short_name, description = description,
                hidden = 0, info = info)
     data = json.dumps(data)
@@ -283,6 +287,7 @@ if __name__ == "__main__":
     parser.add_option("-s", "--server", dest="api_url", help="PyBossa URL http://domain.com/", metavar="URL")
     parser.add_option("-k", "--api-key", dest="api_key", help="PyBossa User API-KEY to interact with PyBossa", metavar="API-KEY")
     parser.add_option("-p", "--template", dest="template", help="PyBossa HTML+JS template for application presenter", metavar="TEMPLATE")
+    parser.add_option("-b", "--tutorial", dest="tutorial", help="App tutorial template for application presenter", metavar="TUTORIAL")
     parser.add_option("-t", "--tiles", dest="tiles", help="File with the name of the tiles", metavar="TILES")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
     # Create App
@@ -318,6 +323,10 @@ if __name__ == "__main__":
         print("Using default template: template.html")
         options.template = "template.html"
 
+    if not options.tutorial:
+        print("Using default tutorial template: tutorial.html")
+        options.tutorial = "tutorial.html"
+
     if not options.tiles:
         parser.error("You must supply a file name with the tiles")
 
@@ -334,7 +343,8 @@ if __name__ == "__main__":
         update_tasks(options.api_url, options.api_key)
 
     if options.create_app:
-        app_id = create_app(options.api_url, options.api_key, template = options.template)
+        app_id = create_app(options.api_url, options.api_key,\
+                 template = options.template, tut = options.tutorial)
         tiles = get_tiles(options.tiles)
         #for tile in tiles:
             #create_task(options.api_url, options.api_key, app_id, tile)

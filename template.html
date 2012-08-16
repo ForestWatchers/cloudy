@@ -71,9 +71,18 @@
           <div id="throbber"></div>
       </div>
     </div>
+
     <!-- Controls for the map -->
     <div class="skeleton span4">
-        <div id="totalarea">
+        <div id="tutorial" style="padding-bottom:10px">
+            <a href="../tutorial" class="btn btn-primary btn-large"><i class="icon-info-sign"></i> Video Tutorial</a>
+        </div>
+        <div id="answer">
+            <button onclick="submitTask('Yes')" class="btn btn-large btn-success"><i class="icon-ok icon-white"></i> Yes</button>
+            <button onclick="submitTask('No')" class="btn btn-large btn-danger"><i class="icon-remove icon-white"></i> No</button>
+        </div>
+
+        <div id="totalarea" style="padding-top:20px;">
             <p>Selected Area covers <span id="pctVal" class="badge badge-inverse">0.00 %</span>
             or <span id="km" class="badge badge-info">0.000 km<sup>2</sup></span> 
             </p>
@@ -82,6 +91,7 @@
                 </div>
             </div>
         </div>
+
         <div id="controls" class="btn-group" data-toggle="buttons-radio" style="text-align:center">
             <button id="navigate" class="btn btn-inverse active" onClick="toggleControl('navigate');">
                 <i class="icon icon-white icon-move"></i> Navigate
@@ -91,10 +101,6 @@
             </button>
         </div>
         <br/>
-        <div id="answer">
-            <button onclick="submitTask('Yes')" class="btn btn-success"><i class="icon-ok icon-white"></i> Yes</button>
-            <button onclick="submitTask('No')" class="btn btn-danger"><i class="icon-remove icon-white"></i> No</button>
-        </div>
         <div style="padding-top:20px;">
             <h4>Overview Map</h4>
             <div id="overviewmap"></div>
@@ -371,7 +377,7 @@ function center(bounds, restrictedExtent) {
 // Load the task data into the HTML skeleton
 function loadTask ( task_id ) {
     var t = $.ajax({
-        url: '/api/task/'+task_id,
+        url: '/pybossa/api/task/'+task_id,
         dataType: 'json'
     });
 
@@ -400,21 +406,25 @@ function loadTask ( task_id ) {
     });
 }
 
-pathArray = window.location.pathname.split('/');
-if (window.location.pathname.indexOf('/task/')!=-1) {
-    var l = pathArray.length;
-    var i = 0;
-    for (i=0;i<l;i++) {
-        if (pathArray[i]=='task') {
-            loadTask(pathArray[i+1]);
-        }
-    }
+var taskId = pybossa.getCurrentTaskId(window.location.pathname);
+
+//pathArray = window.location.pathname.split('/');
+//if (window.location.pathname.indexOf('/task/')!=-1) {
+if (taskId){
+    //var l = pathArray.length;
+    //var i = 0;
+    //for (i=0;i<l;i++) {
+    //    if (pathArray[i]=='task') {
+    //        loadTask(pathArray[i+1]);
+    //    }
+    //}
+    loadTask(taskId);
 }
 else {
-    pybossa.newTask("filtering").done( function( data ) { 
+    pybossa.newTask("filtering", "http://forestwatchers.net/pybossa").done( function( data ) { 
 
         if ( !$.isEmptyObject(data.task) ) {
-            window.location.pathname = "/app/filtering/task/" + data.task.id;
+            window.location.pathname = "/pybossa/app/filtering/task/" + data.task.id;
         }
        else {
             $(".skeleton").hide();
@@ -428,14 +438,13 @@ else {
 function submitTask(answer) {
     task_id = $("#task-id").text();
 
-    pybossa.saveTask( task_id, {'filtering': answer}).done( function(data) {
+    pybossa.saveTask( task_id, {'filtering': answer}, "http://forestwatchers.net/pybossa").done( function(data) {
         // Show the feedback div
         $("#success").fadeIn(); 
         // Fade out the pop-up after a 1000 miliseconds
         setTimeout(function() { $("#success").fadeOut() }, 1000);
         // Request a new task
-        //pybossa.newTask('filtering', 'http://forestwatchers.net/pybossa').done( function(data) { loadData(data) });
-        window.location.pathname = '/app/filtering/newtask';
+        window.location.pathname = '/pybossa/app/filtering/newtask';
     });
 
 }
